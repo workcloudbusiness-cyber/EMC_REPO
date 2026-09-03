@@ -1,0 +1,7 @@
+# Configuracion para Netlify.
+# Esta pagina es HTML simple: no hay nada que compilar, se publica tal cual
+# desde la raiz del repositorio. Netlify lee este archivo solo, asi que en
+# la pantalla de configuracion no hay que llenar nada.
+
+[build]
+  publish = "."

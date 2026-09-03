@@ -13,35 +13,42 @@ cuándo se usa.)*
 
 ## 2. De dónde sale cada cifra
 
-Los datos de esta página viven en Supabase, en el proyecto `curso-EJEMPLO`.
-Ninguna cifra ni ningún texto que se muestre se escribe a mano en el HTML: todo
-sale de esas tablas o de lo que la persona escriba en los formularios.
+Los datos de esta página viven en Supabase, en el proyecto `curso-EJEMPLO`
+(referencia `jxqtemaupajeyytxaxaa`). Ninguna cifra ni ningún texto que se muestre se
+escribe a mano en el HTML: todo sale de esas tablas o de lo que la persona escriba en
+los formularios. `index.html` las consulta directo por la API de Supabase con la llave
+publicable. Estas son las columnas que acabaron teniendo las tablas, comprobadas contra
+la base el 3 de septiembre de 2026.
 
 ### Tabla `pacientes`
+
+La llena el formulario "Registro del paciente" y la lee "Pacientes registrados".
 
 | Columna | Qué guarda |
 |---|---|
 | `id` | Identificador único, lo pone la base sola |
 | `creado_en` | Fecha y hora del registro, la pone la base sola |
-| `nombre` | Nombre completo (obligatorio) |
-| `telefono` | Teléfono de contacto |
-| `correo` | Correo de contacto |
-| `fecha_nacimiento` | Fecha de nacimiento |
-| `notas` | Notas libres |
+| `nombre` | Nombre completo. **Obligatorio**, no puede quedar vacío |
+| `telefono` | Teléfono de contacto. Opcional |
+| `correo` | Correo de contacto. Opcional |
+| `fecha_nacimiento` | Fecha de nacimiento. Opcional |
+| `notas` | Notas libres. Opcional |
 
 ### Tabla `citas`
+
+De aquí salen el calendario, las citas del día y la confirmación de pago.
 
 | Columna | Qué guarda |
 |---|---|
 | `id` | Identificador único, lo pone la base sola |
 | `creado_en` | Cuándo se agendó, la pone la base sola |
-| `paciente_id` | De quién es la cita. Si se borra el paciente, sus citas se borran con él |
-| `fecha_hora` | Cuándo es la cita |
-| `duracion_minutos` | Cuánto dura (60 por default) |
-| `motivo` | Motivo de la consulta |
-| `estado` | Solo acepta `agendada`, `atendida` o `cancelada` |
+| `paciente_id` | De quién es la cita. **Obligatorio**. Si se borra el paciente, sus citas se borran con él |
+| `fecha_hora` | Cuándo es la cita. **Obligatorio** |
+| `duracion_minutos` | Cuánto dura. Nace en 60 |
+| `motivo` | Motivo de la consulta. Opcional |
+| `estado` | Nace en `agendada` y solo acepta `agendada`, `atendida` o `cancelada` |
 | `pagada` | Si el paciente ya pagó (sí/no). Nace en "no" |
-| `pagado_en` | Cuándo se confirmó el pago |
+| `pagado_en` | Cuándo se confirmó el pago. Vacía mientras no se cobre |
 | `monto` | Cuánto pagó. Es opcional, pero no puede ser negativo |
 
 ### Tabla `administradores`
@@ -52,10 +59,10 @@ La usa el módulo de súper administrador.
 |---|---|
 | `id` | Identificador único, lo pone la base sola |
 | `creado_en` | Cuándo se dio de alta, la pone la base sola |
-| `nombre` | Nombre del administrador (obligatorio) |
-| `correo` | Correo de contacto |
+| `nombre` | Nombre del administrador. **Obligatorio** |
+| `correo` | Correo de contacto. Opcional |
 | `bloqueado` | Si está bloqueado (sí/no). Nace en "no" |
-| `pagado_hasta` | Fecha hasta la que está cubierto su pago |
+| `pagado_hasta` | Fecha hasta la que está cubierto su pago. Vacía si nunca ha pagado |
 
 El semáforo de la pantalla se calcula así, y **el bloqueo manda sobre todo lo demás**:
 `bloqueado` → **bloqueado**; si no, `pagado_hasta` vacía o ya pasada → **vencido**;
@@ -69,8 +76,9 @@ si no → **al corriente**. Registrar un pago también le quita el bloqueo.
 
 ### Tabla `registros`
 
-Es la del ejercicio anterior (un muro de mensajes con `nombre` y `mensaje`).
-Sigue existiendo pero la página ya no la usa.
+Es la del ejercicio anterior: un muro de mensajes con `id`, `creado_en`, `nombre` y
+`mensaje`, los dos últimos opcionales. Sigue existiendo, está vacía y la página ya no
+la usa.
 
 ### Permisos, y por qué importan
 

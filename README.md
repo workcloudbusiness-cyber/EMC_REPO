@@ -1,31 +1,23 @@
-# Mi página
+# Consultorio psicológico
+Página de una sola pantalla, con tres pestañas: el paciente pide su cita en **Registro
+del paciente**; quien atiende ve el calendario, agenda y marca pagos en **Panel del
+administrador**; en **Súper administrador** se dan de alta administradores y se ve quién
+está al corriente, vencido o bloqueado. Es un ejercicio del curso Claude for Business
+hecho sin escribir código. **Los datos son inventados: no metas datos reales de ningún
+paciente**, porque las tablas están abiertas a cualquiera que tenga la liga.
 
-Una página pública con un formulario que guarda lo que la gente escribe, y una
-lista que muestra lo guardado.
+## De dónde salen los datos
+Ninguna cifra está escrita en el HTML. Todo sale de Supabase (proyecto `curso-EJEMPLO`):
+las tablas `pacientes`, `citas` y `administradores`, que `index.html` consulta por su API
+con la llave publicable. Las columnas de cada tabla están en `CLAUDE.md`, sección 2.
 
-Construida en la **Sesión 7 del curso Claude for Business**, sin escribir código:
-todo se le pidió a Claude en español.
+## Qué hay en .claude
+`agents/revisor-antes-de-publicar.md` es un subagente que, antes de publicar, busca llaves
+secretas, errores que tumben la página y código ineficiente, y entrega un reporte. No
+arregla nada: el arreglo lo decides tú.
 
-## Cómo está armado
-
-| Pieza | Qué hace |
-|---|---|
-| **GitHub** | Guarda este proyecto y su historial |
-| **Netlify** | Publica lo que hay aquí como página web |
-| **Supabase** | Guarda lo que la gente escribe en el formulario |
-
-## Cómo se cambia
-
-1. Se abre una sesión de Claude sobre este repositorio.
-2. Se le pide el cambio **en una rama**, no en `main`.
-3. Netlify hace una **vista previa** con su propia liga: ahí se revisa.
-4. Cuando está bien, se fusiona la rama. Eso —y solo eso— publica.
-
-> **Fusionar cuesta.** El plan gratuito de Netlify alcanza para unas veinte
-> publicaciones al mes. Las vistas previas son gratis e ilimitadas: se itera ahí
-> y se fusiona poco.
-
-## Qué NO va en este repositorio
-
-La llave `sb_publishable_` sí puede estar aquí: está hecha para andar a la vista.
-La que empieza con `sb_secret_` o dice `service_role`, **nunca**.
+## Para continuar
+Abre una sesión de Claude sobre este repositorio y pídele el cambio. Las reglas (rama →
+pull request → fusión a `main`) están en `CLAUDE.md`, y con cada fusión
+`.github/workflows/publicar.yml` publica solo en
+<https://workcloudbusiness-cyber.github.io/EMC_REPO/>.

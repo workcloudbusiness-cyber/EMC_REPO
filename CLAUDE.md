@@ -23,6 +23,8 @@ la base el 3 de septiembre de 2026.
 ### Tabla `pacientes`
 
 La llena el formulario "Registro del paciente" y la lee "Pacientes registrados".
+Ojo: `notas` no se captura en ningún formulario, solo se muestra; hoy se escribe
+entrando a mano a Supabase.
 
 | Columna | Qué guarda |
 |---|---|
@@ -91,6 +93,11 @@ permisos no funcionaría.
 > reales de pacientes.** Si algún día se va a usar con gente de verdad, primero
 > hay que poner cuentas con contraseña (Supabase Auth) y cerrar la lectura a
 > quien no haya iniciado sesión.
+
+En `administradores` pasa lo mismo y por la misma razón: el módulo de súper
+administrador da de alta, edita, bloquea y borra desde el navegador y sin
+contraseña, así que **cualquiera con la liga puede hacerlo**. No supongas que esa
+lista está protegida: no lo está.
 
 En `registros` los permisos siguen como estaban: leer y agregar sí, borrar y
 editar no.

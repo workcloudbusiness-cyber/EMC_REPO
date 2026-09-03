@@ -17,7 +17,7 @@ secretas, errores que tumben la página y código ineficiente, y entrega un repo
 arregla nada: el arreglo lo decides tú.
 
 ## Para continuar
-Abre una sesión de Claude sobre este repositorio y pídele el cambio. Las reglas (rama →
-pull request → fusión a `main`) están en `CLAUDE.md`, y con cada fusión
-`.github/workflows/publicar.yml` publica solo en
-<https://workcloudbusiness-cyber.github.io/EMC_REPO/>.
+Abre una sesión de Claude sobre este repositorio y pídele el cambio; las reglas (rama →
+pull request → fusión a `main`) están en `CLAUDE.md`. Con cada fusión,
+`.github/workflows/publicar.yml` publica en <https://workcloudbusiness-cyber.github.io/EMC_REPO/>.
+El `netlify.toml` quedó de un intento anterior: **Netlify no está conectado** (ver `CLAUDE.md`).

@@ -68,11 +68,49 @@ editar no.
 
 - Antes de un cambio grande, dame el plan por escrito y espera mi visto bueno.
 - Un cambio a la vez. Enséñame qué cambió antes de escribirlo.
-- Trabaja siempre en una rama, nunca directo sobre `main`.
-- No publiques a producción sin que yo lo pida: fusionar es una decisión mía.
+- Trabaja siempre en una rama. Nunca escribas commits directo sobre `main`.
 - **Si tienes acceso a mi base de datos, enséñame el SQL antes de correrlo y espera mi
   respuesta.** Crear o borrar tablas, agregar o quitar columnas y cambiar permisos no se
   deshacen con una rama: en cuanto corren, ya está.
+
+### Cómo se cierra CUALQUIER cambio, en CUALQUIER rama
+
+Ningún cambio se queda a medias en una rama. **Ya di mi permiso de una vez y para
+siempre**: no me vuelvas a preguntar si fusionar o si desplegar. Cada vez que termines
+algo, en este orden:
+
+1. **Commit y push** a la rama en la que trabajaste.
+2. **Abre el pull request** de esa rama hacia `main`, explicando qué cambió y por qué.
+3. **Fusiona el pull request a `main`.**
+4. **Despliega a producción**, que son los dos lugares de la sección siguiente.
+5. **Verifica que de verdad quedó**: la publicación en verde y la página abriendo.
+   Nunca digas que quedó sin haberlo comprobado.
+6. **Dime la liga y qué cambió.**
+
+Si alguno de esos pasos te lo bloquean los permisos, **dilo claramente y dime qué clic
+me toca dar a mí**. No lo escondas ni des por hecho que quedó.
+
+### Dónde vive producción
+
+**La página web.** Se publica en **GitHub Pages**, sola, con la receta
+`.github/workflows/publicar.yml`, cada vez que algo llega a `main`.
+Liga: <https://workcloudbusiness-cyber.github.io/EMC_REPO/>
+
+> **Netlify todavía NO está conectado.** Existe el sitio
+> `mi-pagina-servicio-de-nube-s7` en la cuenta, pero está vacío y no está enganchado a
+> este repositorio, así que **hoy no hay nada que desplegar ahí**. Para conectarlo hay
+> que entrar a <https://app.netlify.com/projects/mi-pagina-servicio-de-nube-s7>, darle
+> **Link repository** → GitHub → `workcloudbusiness-cyber/EMC_REPO`, rama `main`, y
+> dejar vacíos los campos de compilación (el `netlify.toml` ya los define). Ese clic lo
+> tiene que dar una persona. **Mientras eso no pase, no digas que desplegaste a
+> Netlify**: no sería cierto. En cuanto se conecte, Netlify publicará solo con cada
+> fusión a `main`, igual que Pages.
+
+**La base de datos (Supabase).** El proyecto es `curso-EJEMPLO`. **No hay un ambiente de
+pruebas aparte: en el momento en que corres una migración, ya estás en producción.** Por
+eso el SQL se enseña antes de correrlo, aunque el resto del cambio vaya en una rama. Y
+por eso el orden importa: **primero la migración, después la fusión** del código que la
+usa, para que la página nunca le pida a la base una columna que todavía no existe.
 
 ## 4. Lo que nunca debes hacer
 
@@ -92,8 +130,9 @@ que ser cierto para que puedas publicarlo.)*
 
 - El proyecto vive en este repositorio de GitHub.
 - Se abre pidiéndole a Claude una sesión sobre este repo; no hace falta descargarlo.
-- La página publicada está en la liga que da Netlify.
-- La base de datos está en supabase.com, en el proyecto de esta cuenta.
+- La página publicada está en <https://workcloudbusiness-cyber.github.io/EMC_REPO/>
+  (GitHub Pages). Netlify todavía no está conectado; ver la sección 3.
+- La base de datos está en supabase.com, en el proyecto `curso-EJEMPLO`.
 
 > **Si la página deja de mostrar datos después de una semana sin usarla**, casi
 > siempre es que el proyecto gratuito de Supabase se pausó. Se despierta con el

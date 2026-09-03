@@ -1,11 +1,11 @@
 # Publica esta pagina en GitHub Pages.
-# Se ejecuta sola cada vez que cambia algo en la rama de trabajo.
+# Produccion sale de main: corre sola cada vez que algo se fusiona ahi.
 name: Publicar la pagina
 
 on:
   push:
     branches:
-      - claude/github-supabase-setup-m2rm77
+      - main
   workflow_dispatch:
 
 permissions:

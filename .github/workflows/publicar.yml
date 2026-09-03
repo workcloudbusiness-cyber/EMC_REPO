@@ -1,11 +1,19 @@
 # Publica esta pagina en GitHub Pages.
-# Produccion sale de main: corre sola cada vez que algo se fusiona ahi.
+#
+# GitHub Pages SOLO acepta despliegues desde la rama principal del repositorio.
+# Por eso aqui no se escribe el nombre de ninguna rama a mano: se compara contra
+# la rama principal, la que sea. Hoy la principal es la rama de trabajo; el dia
+# que se cambie a main, esto sigue funcionando solo, sin tocar este archivo.
+#
+# Si el cambio llega a una rama que NO es la principal, el trabajo se salta y la
+# corrida queda en gris, no en rojo: no es un error, es que ahi no toca publicar.
 name: Publicar la pagina
 
 on:
   push:
     branches:
       - main
+      - claude/github-supabase-setup-m2rm77
   workflow_dispatch:
 
 permissions:
@@ -20,6 +28,8 @@ concurrency:
 jobs:
   publicar:
     runs-on: ubuntu-latest
+    # Solo publica si esto corre sobre la rama principal del repositorio.
+    if: github.ref_name == github.event.repository.default_branch
     environment:
       name: github-pages
       url: ${{ steps.publicacion.outputs.page_url }}

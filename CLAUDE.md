@@ -116,8 +116,18 @@ me toca dar a mí**. No lo escondas ni des por hecho que quedó.
 ### Dónde vive producción
 
 **La página web.** Se publica en **GitHub Pages**, sola, con la receta
-`.github/workflows/publicar.yml`, cada vez que algo llega a `main`.
+`.github/workflows/publicar.yml`.
 Liga: <https://workcloudbusiness-cyber.github.io/EMC_REPO/>
+
+> **De qué rama sale la publicación.** GitHub Pages **solo despliega desde la rama
+> principal del repositorio**, no desde la que uno quiera. Hoy la rama principal es
+> `claude/github-supabase-setup-m2rm77`, no `main`. Por eso la receta no lleva ningún
+> nombre de rama escrito a mano: compara contra la rama principal, la que sea. Eso
+> significa que **el paso de fusionar a `main` sigue siendo obligatorio** (ahí vive el
+> historial ordenado), pero además hay que dejar la rama principal al día para que la
+> publicación salga. En la práctica: fusiona a `main` y luego publica desde la rama
+> principal. El día que alguien cambie la rama principal a `main` en los ajustes de
+> GitHub, todo esto se vuelve un solo paso y **no hay que tocar ningún archivo**.
 
 > **Netlify todavía NO está conectado.** Existe el sitio
 > `mi-pagina-servicio-de-nube-s7` en la cuenta, pero está vacío y no está enganchado a

@@ -1,0 +1,42 @@
+# Publica esta pagina en GitHub Pages.
+# Se ejecuta sola cada vez que cambia algo en la rama de trabajo.
+name: Publicar la pagina
+
+on:
+  push:
+    branches:
+      - claude/github-supabase-setup-m2rm77
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.publicacion.outputs.page_url }}
+    steps:
+      - name: Bajar los archivos del repositorio
+        uses: actions/checkout@v4
+
+      - name: Encender GitHub Pages si esta apagado
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Empaquetar la pagina
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Publicar
+        id: publicacion
+        uses: actions/deploy-pages@v4

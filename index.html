@@ -3,178 +3,661 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Deja tu mensaje</title>
+<meta name="robots" content="noindex, nofollow">
+<title>Consultorio · Pacientes y citas</title>
 <style>
-  :root { color-scheme: light dark; }
+  :root {
+    color-scheme: light dark;
+    --fondo: #f4f6f8;
+    --tinta: #1a2027;
+    --tarjeta: #ffffff;
+    --borde: #dde3ea;
+    --suave: #eef2f6;
+    --azul: #1f6feb;
+    --azul-oscuro: #1a5fd0;
+    --verde: #1a7f45;
+    --rojo: #c02b2b;
+    --tenue: #6b7785;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fondo: #121820; --tinta: #e8eef5; --tarjeta: #1b232e;
+      --borde: #2b3644; --suave: #202b38; --tenue: #96a3b3;
+    }
+  }
   * { box-sizing: border-box; }
   body {
-    margin: 0; min-height: 100vh;
+    margin: 0; min-height: 100vh; padding: 20px;
     font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-    background: #f4f6f8; color: #1a2027;
-    padding: 24px;
+    background: var(--fondo); color: var(--tinta);
     display: flex; justify-content: center;
   }
-  .hoja { width: 100%; max-width: 560px; }
-  h1 { font-size: 24px; margin: 0 0 6px; }
-  .intro { margin: 0 0 24px; line-height: 1.55; opacity: .8; }
-  .caja {
-    background: #fff; border: 1px solid #dde3ea; border-radius: 14px;
-    padding: 22px; margin-bottom: 24px;
-    box-shadow: 0 10px 30px -18px rgba(0,0,0,.3);
+  .hoja { width: 100%; max-width: 860px; }
+
+  .alerta {
+    background: #fff4d6; border: 1px solid #e6c86a; color: #6b4e00;
+    border-radius: 10px; padding: 12px 15px; margin-bottom: 20px;
+    font-size: 14px; line-height: 1.5;
   }
+  @media (prefers-color-scheme: dark) {
+    .alerta { background: #3a2f10; border-color: #6b5820; color: #f0dfae; }
+  }
+
+  header h1 { font-size: 25px; margin: 0 0 5px; }
+  header p  { margin: 0 0 22px; color: var(--tenue); line-height: 1.5; }
+
+  .pestanas { display: flex; gap: 8px; margin-bottom: 22px; flex-wrap: wrap; }
+  .pestanas button {
+    flex: 1 1 200px; padding: 11px 14px; border: 1px solid var(--borde);
+    border-radius: 10px; background: var(--tarjeta); color: var(--tinta);
+    font: inherit; font-weight: 600; font-size: 15px; cursor: pointer;
+  }
+  .pestanas button[aria-selected="true"] {
+    background: var(--azul); border-color: var(--azul); color: #fff;
+  }
+
+  .tarjeta {
+    background: var(--tarjeta); border: 1px solid var(--borde);
+    border-radius: 14px; padding: 20px; margin-bottom: 20px;
+  }
+  .tarjeta > h2 { font-size: 17px; margin: 0 0 16px; }
+
   label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
-  input, textarea {
-    width: 100%; padding: 10px 12px; margin-bottom: 16px;
-    border: 1px solid #cfd8e2; border-radius: 8px;
+  input, textarea, select {
+    width: 100%; padding: 10px 12px; margin-bottom: 15px;
+    border: 1px solid var(--borde); border-radius: 8px;
     font: inherit; font-size: 15px;
-    background: #fff; color: inherit;
+    background: var(--fondo); color: var(--tinta);
   }
-  textarea { resize: vertical; min-height: 84px; }
-  input:focus, textarea:focus { outline: 2px solid #3b7dd8; outline-offset: 1px; border-color: #3b7dd8; }
-  button {
+  textarea { resize: vertical; min-height: 70px; }
+  input:focus, textarea:focus, select:focus {
+    outline: 2px solid var(--azul); outline-offset: 1px; border-color: var(--azul);
+  }
+  .pareja { display: flex; gap: 14px; flex-wrap: wrap; }
+  .pareja > div { flex: 1 1 200px; }
+
+  button.principal {
     width: 100%; padding: 11px 16px; border: 0; border-radius: 8px;
-    background: #1f6feb; color: #fff; font: inherit; font-weight: 600;
+    background: var(--azul); color: #fff; font: inherit; font-weight: 600;
     font-size: 15px; cursor: pointer;
   }
-  button:hover:not(:disabled) { background: #1a5fd0; }
-  button:disabled { opacity: .55; cursor: default; }
-  .aviso { margin-top: 14px; font-size: 14px; line-height: 1.5; min-height: 1px; }
-  .aviso.ok { color: #1a7f45; }
-  .aviso.mal { color: #c02b2b; }
-  h2 { font-size: 17px; margin: 0 0 12px; }
-  .registro {
-    background: #fff; border: 1px solid #dde3ea; border-radius: 12px;
-    padding: 15px 17px; margin-bottom: 11px;
+  button.principal:hover:not(:disabled) { background: var(--azul-oscuro); }
+  button.principal:disabled { opacity: .55; cursor: default; }
+
+  .chico {
+    padding: 6px 11px; border: 1px solid var(--borde); border-radius: 7px;
+    background: var(--tarjeta); color: var(--tinta);
+    font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
   }
-  .registro .quien { font-weight: 600; margin-bottom: 4px; }
-  .registro .texto { line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
-  .registro .cuando { font-size: 13px; opacity: .6; margin-top: 8px; }
-  .vacio { opacity: .7; line-height: 1.55; }
-  @media (prefers-color-scheme: dark) {
-    body { background: #121820; color: #e8eef5; }
-    .caja, .registro { background: #1b232e; border-color: #2b3644; }
-    input, textarea { background: #131a23; border-color: #2b3644; }
+  .chico:hover { background: var(--suave); }
+  .chico.peligro { color: var(--rojo); border-color: var(--rojo); }
+  .chico.bien    { color: var(--verde); border-color: var(--verde); }
+
+  .aviso { font-size: 14px; line-height: 1.5; margin: 12px 0 0; }
+  .aviso.ok  { color: var(--verde); }
+  .aviso.mal { color: var(--rojo); }
+  .vacio { color: var(--tenue); line-height: 1.55; margin: 0; }
+
+  /* Calendario */
+  .mes-barra {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; margin-bottom: 14px;
   }
+  .mes-barra strong { font-size: 16px; text-transform: capitalize; }
+  .rejilla { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+  .dia-nombre {
+    text-align: center; font-size: 12px; font-weight: 700;
+    color: var(--tenue); padding: 4px 0;
+  }
+  .dia {
+    aspect-ratio: 1; border: 1px solid var(--borde); border-radius: 9px;
+    background: var(--tarjeta); color: var(--tinta); cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 3px; font: inherit; font-size: 14px; padding: 2px;
+  }
+  .dia.fuera { opacity: .32; }
+  .dia.hoy { border-color: var(--azul); border-width: 2px; }
+  .dia[aria-pressed="true"] { background: var(--azul); border-color: var(--azul); color: #fff; }
+  .globo {
+    font-size: 11px; font-weight: 700; line-height: 1;
+    background: var(--azul); color: #fff; border-radius: 999px; padding: 2px 6px;
+  }
+  .dia[aria-pressed="true"] .globo { background: #fff; color: var(--azul); }
+
+  /* Citas y pacientes */
+  .renglon {
+    border: 1px solid var(--borde); border-radius: 11px;
+    padding: 13px 15px; margin-bottom: 10px; background: var(--tarjeta);
+  }
+  .renglon .arriba {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 10px; flex-wrap: wrap;
+  }
+  .renglon .quien { font-weight: 600; }
+  .renglon .hora  { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .renglon .dato  { font-size: 14px; color: var(--tenue); margin-top: 4px; line-height: 1.5; }
+  .renglon .acciones { display: flex; gap: 7px; margin-top: 11px; flex-wrap: wrap; }
+  .renglon.cancelada .quien, .renglon.cancelada .hora { text-decoration: line-through; opacity: .6; }
+
+  .etiqueta {
+    font-size: 12px; font-weight: 700; border-radius: 999px;
+    padding: 2px 9px; border: 1px solid;
+  }
+  .etiqueta.agendada  { color: var(--azul);  border-color: var(--azul); }
+  .etiqueta.atendida  { color: var(--verde); border-color: var(--verde); }
+  .etiqueta.cancelada { color: var(--tenue); border-color: var(--tenue); }
+
+  [hidden] { display: none !important; }
 </style>
 </head>
 <body>
-  <main class="hoja">
-    <h1>Deja tu mensaje</h1>
-    <p class="intro">Escribe tu nombre y lo que quieras decir. Se guarda y aparece
-       abajo, junto con lo que han dejado los demás.</p>
+<main class="hoja">
 
-    <form class="caja" id="formulario">
-      <label for="nombre">Tu nombre</label>
-      <input id="nombre" name="nombre" type="text" maxlength="80" required
-             autocomplete="name" placeholder="Cómo te llamas">
+  <p class="alerta">
+    <strong>Demostración de un curso.</strong> Esta página es un ejercicio de práctica
+    y cualquiera que tenga la liga puede ver y modificar lo que aquí se escriba.
+    <strong>No escribas datos reales de ninguna persona.</strong>
+  </p>
 
-      <label for="mensaje">Tu mensaje</label>
-      <textarea id="mensaje" name="mensaje" maxlength="1000" required
-                placeholder="Lo que quieras dejar escrito"></textarea>
+  <header>
+    <h1>Consultorio psicológico</h1>
+    <p>Registro de pacientes y control de citas.</p>
+  </header>
 
-      <button type="submit" id="boton">Guardar mi mensaje</button>
-      <p class="aviso" id="aviso" role="status" aria-live="polite"></p>
+  <div class="pestanas" role="tablist">
+    <button role="tab" id="tab-registro" aria-selected="true"  aria-controls="vista-registro">Registro del paciente</button>
+    <button role="tab" id="tab-panel"    aria-selected="false" aria-controls="vista-panel">Panel del administrador</button>
+  </div>
+
+  <!-- ============ MÓDULO 1: REGISTRO DEL PACIENTE ============ -->
+  <section id="vista-registro" role="tabpanel" aria-labelledby="tab-registro">
+    <form class="tarjeta" id="forma-registro">
+      <h2>Datos del paciente y cita deseada</h2>
+
+      <label for="r-nombre">Nombre completo *</label>
+      <input id="r-nombre" type="text" maxlength="120" required autocomplete="off" placeholder="Nombre y apellidos">
+
+      <div class="pareja">
+        <div>
+          <label for="r-telefono">Teléfono</label>
+          <input id="r-telefono" type="tel" maxlength="30" autocomplete="off" placeholder="10 dígitos">
+        </div>
+        <div>
+          <label for="r-correo">Correo</label>
+          <input id="r-correo" type="email" maxlength="120" autocomplete="off" placeholder="alguien@ejemplo.com">
+        </div>
+      </div>
+
+      <div class="pareja">
+        <div>
+          <label for="r-nacimiento">Fecha de nacimiento</label>
+          <input id="r-nacimiento" type="date">
+        </div>
+        <div>
+          <label for="r-cuando">Fecha y hora que le acomoda *</label>
+          <input id="r-cuando" type="datetime-local" required>
+        </div>
+      </div>
+
+      <label for="r-motivo">Motivo de la consulta</label>
+      <textarea id="r-motivo" maxlength="600" placeholder="En pocas palabras, qué le trae a consulta"></textarea>
+
+      <button type="submit" class="principal" id="r-boton">Registrar y pedir cita</button>
+      <p class="aviso" id="r-aviso" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <!-- ============ MÓDULO 2: PANEL DEL ADMINISTRADOR ============ -->
+  <section id="vista-panel" role="tabpanel" aria-labelledby="tab-panel" hidden>
+
+    <div class="tarjeta">
+      <h2>Calendario de citas</h2>
+      <div class="mes-barra">
+        <button class="chico" id="mes-antes" type="button">← Anterior</button>
+        <strong id="mes-nombre">—</strong>
+        <button class="chico" id="mes-despues" type="button">Siguiente →</button>
+      </div>
+      <div class="rejilla" id="calendario"></div>
+    </div>
+
+    <div class="tarjeta">
+      <h2 id="titulo-dia">Citas del día</h2>
+      <div id="citas-dia"><p class="vacio">Cargando…</p></div>
+    </div>
+
+    <form class="tarjeta" id="forma-cita">
+      <h2>Agendar una cita nueva</h2>
+      <label for="c-paciente">Paciente *</label>
+      <select id="c-paciente" required></select>
+
+      <div class="pareja">
+        <div>
+          <label for="c-cuando">Fecha y hora *</label>
+          <input id="c-cuando" type="datetime-local" required>
+        </div>
+        <div>
+          <label for="c-duracion">Duración (minutos)</label>
+          <input id="c-duracion" type="number" min="15" max="240" step="15" value="60">
+        </div>
+      </div>
+
+      <label for="c-motivo">Motivo</label>
+      <input id="c-motivo" type="text" maxlength="200" placeholder="Sesión de seguimiento, primera consulta…">
+
+      <button type="submit" class="principal" id="c-boton">Agendar</button>
+      <p class="aviso" id="c-aviso" role="status" aria-live="polite"></p>
     </form>
 
-    <section>
-      <h2>Lo que ha dejado la gente</h2>
-      <div id="lista"><p class="vacio">Cargando…</p></div>
-    </section>
-  </main>
+    <div class="tarjeta">
+      <h2>Pacientes registrados</h2>
+      <div id="lista-pacientes"><p class="vacio">Cargando…</p></div>
+    </div>
+
+  </section>
+</main>
 
 <script>
-  // Datos de conexion a Supabase.
-  // Esta llave es la PUBLICABLE: esta hecha para andar a la vista en la pagina.
-  // Lo que se puede hacer con ella lo decide Supabase (leer y agregar, nunca borrar).
-  const SUPABASE_URL = "https://jxqtemaupajeyytxaxaa.supabase.co";
-  const SUPABASE_LLAVE = "sb_publishable_BtoaP1DzyKNd8BJ718ZduA_FTxDEG-7";
+/* ------------------------------------------------------------------
+   Conexión con Supabase.
+   La llave es la PUBLICABLE: está hecha para andar a la vista.
+   Lo que se puede hacer con ella lo decide Supabase, no esta página.
+------------------------------------------------------------------ */
+const SUPABASE_URL   = "https://jxqtemaupajeyytxaxaa.supabase.co";
+const SUPABASE_LLAVE = "sb_publishable_BtoaP1DzyKNd8BJ718ZduA_FTxDEG-7";
 
-  const TABLA = SUPABASE_URL + "/rest/v1/registros";
-  const CABECERAS = { apikey: SUPABASE_LLAVE, Authorization: "Bearer " + SUPABASE_LLAVE };
+const API = SUPABASE_URL + "/rest/v1/";
+const CABECERAS = {
+  apikey: SUPABASE_LLAVE,
+  Authorization: "Bearer " + SUPABASE_LLAVE,
+  "Content-Type": "application/json"
+};
 
-  const formulario = document.getElementById("formulario");
-  const boton = document.getElementById("boton");
-  const aviso = document.getElementById("aviso");
-  const lista = document.getElementById("lista");
+async function api(ruta, opciones) {
+  opciones = opciones || {};
+  const r = await fetch(API + ruta, {
+    method: opciones.method || "GET",
+    headers: Object.assign({}, CABECERAS, opciones.headers || {}),
+    body: opciones.body
+  });
+  const texto = await r.text();
+  if (!r.ok) throw new Error(texto || ("respuesta " + r.status));
+  return texto ? JSON.parse(texto) : null;
+}
 
-  function decir(texto, clase) {
-    aviso.textContent = texto;
-    aviso.className = "aviso" + (clase ? " " + clase : "");
+/* ------------------------- Estado ------------------------- */
+let pacientes = [];
+let citas = [];
+let mesVisible = new Date();
+let diaElegido = new Date();
+
+/* ------------------------- Utilerías ------------------------- */
+const dos = n => String(n).padStart(2, "0");
+const claveDia = d => d.getFullYear() + "-" + dos(d.getMonth() + 1) + "-" + dos(d.getDate());
+const mismoDia = (a, b) => claveDia(a) === claveDia(b);
+
+function paraInput(d) {
+  return claveDia(d) + "T" + dos(d.getHours()) + ":" + dos(d.getMinutes());
+}
+function horaTexto(iso) {
+  return new Date(iso).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
+}
+function fechaLarga(d) {
+  return d.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+}
+function decir(elemento, texto, clase) {
+  elemento.textContent = texto;
+  elemento.className = "aviso" + (clase ? " " + clase : "");
+}
+function nuevo(etiqueta, clase, texto) {
+  const e = document.createElement(etiqueta);
+  if (clase) e.className = clase;
+  if (texto !== undefined) e.textContent = texto;
+  return e;
+}
+
+/* ------------------------- Pestañas ------------------------- */
+const tabRegistro = document.getElementById("tab-registro");
+const tabPanel    = document.getElementById("tab-panel");
+const vistaRegistro = document.getElementById("vista-registro");
+const vistaPanel    = document.getElementById("vista-panel");
+
+function mostrar(cual) {
+  const esPanel = cual === "panel";
+  tabPanel.setAttribute("aria-selected", String(esPanel));
+  tabRegistro.setAttribute("aria-selected", String(!esPanel));
+  vistaPanel.hidden = !esPanel;
+  vistaRegistro.hidden = esPanel;
+}
+tabRegistro.addEventListener("click", () => mostrar("registro"));
+tabPanel.addEventListener("click", () => { mostrar("panel"); cargarTodo(); });
+
+/* ------------------------- Cargar datos ------------------------- */
+async function cargarTodo() {
+  let fallo = null;
+  try {
+    const [p, c] = await Promise.all([
+      api("pacientes?select=*&order=nombre.asc"),
+      api("citas?select=*,pacientes(nombre,telefono)&order=fecha_hora.asc")
+    ]);
+    pacientes = p || [];
+    citas = c || [];
+  } catch (e) {
+    console.error(e);
+    fallo = e;
   }
 
-  function fecha(iso) {
-    if (!iso) return "";
-    return new Date(iso).toLocaleString("es-MX", {
-      day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit"
+  // El calendario se pinta siempre, aunque la base no conteste: asi la
+  // pantalla nunca queda en blanco y se ve donde esta el problema.
+  pintarCalendario();
+  pintarDia();
+  pintarSelectPacientes();
+  pintarPacientes();
+
+  if (fallo) {
+    const recado = "No se pudo hablar con la base de datos. Si la página estuvo " +
+                   "una semana sin usarse, el proyecto de Supabase pudo pausarse: " +
+                   "se despierta con el botón Resume project.";
+    document.getElementById("citas-dia").replaceChildren(nuevo("p", "aviso mal", recado));
+    document.getElementById("lista-pacientes").replaceChildren(nuevo("p", "aviso mal", recado));
+  }
+}
+
+/* ------------------------- Calendario ------------------------- */
+const NOMBRES_DIA = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+
+function citasDe(fecha) {
+  const clave = claveDia(fecha);
+  return citas.filter(c => claveDia(new Date(c.fecha_hora)) === clave);
+}
+
+function pintarCalendario() {
+  const rejilla = document.getElementById("calendario");
+  rejilla.replaceChildren();
+
+  document.getElementById("mes-nombre").textContent =
+    mesVisible.toLocaleDateString("es-MX", { month: "long", year: "numeric" });
+
+  NOMBRES_DIA.forEach(n => rejilla.append(nuevo("div", "dia-nombre", n)));
+
+  const primero = new Date(mesVisible.getFullYear(), mesVisible.getMonth(), 1);
+  // getDay(): 0 = domingo. Se corre para que la semana empiece en lunes.
+  const corrimiento = (primero.getDay() + 6) % 7;
+  const inicio = new Date(primero);
+  inicio.setDate(1 - corrimiento);
+
+  const hoy = new Date();
+  for (let i = 0; i < 42; i++) {
+    const fecha = new Date(inicio);
+    fecha.setDate(inicio.getDate() + i);
+
+    const boton = nuevo("button", "dia");
+    boton.type = "button";
+    if (fecha.getMonth() !== mesVisible.getMonth()) boton.classList.add("fuera");
+    if (mismoDia(fecha, hoy)) boton.classList.add("hoy");
+    boton.setAttribute("aria-pressed", String(mismoDia(fecha, diaElegido)));
+
+    boton.append(nuevo("span", null, String(fecha.getDate())));
+    const activas = citasDe(fecha).filter(c => c.estado !== "cancelada").length;
+    if (activas) boton.append(nuevo("span", "globo", String(activas)));
+
+    boton.addEventListener("click", () => {
+      diaElegido = fecha;
+      if (fecha.getMonth() !== mesVisible.getMonth()) mesVisible = new Date(fecha);
+      pintarCalendario();
+      pintarDia();
     });
+    rejilla.append(boton);
+  }
+}
+
+document.getElementById("mes-antes").addEventListener("click", () => {
+  mesVisible = new Date(mesVisible.getFullYear(), mesVisible.getMonth() - 1, 1);
+  pintarCalendario();
+});
+document.getElementById("mes-despues").addEventListener("click", () => {
+  mesVisible = new Date(mesVisible.getFullYear(), mesVisible.getMonth() + 1, 1);
+  pintarCalendario();
+});
+
+/* ------------------------- Citas del día ------------------------- */
+function pintarDia() {
+  document.getElementById("titulo-dia").textContent = "Citas del " + fechaLarga(diaElegido);
+  const caja = document.getElementById("citas-dia");
+  const delDia = citasDe(diaElegido);
+
+  if (!delDia.length) {
+    caja.replaceChildren(nuevo("p", "vacio", "No hay ninguna cita agendada este día."));
+    return;
+  }
+  caja.replaceChildren(...delDia.map(tarjetaDeCita));
+}
+
+function tarjetaDeCita(cita) {
+  const caja = nuevo("article", "renglon " + cita.estado);
+
+  const arriba = nuevo("div", "arriba");
+  arriba.append(nuevo("span", "hora", horaTexto(cita.fecha_hora)));
+  arriba.append(nuevo("span", "quien", cita.pacientes ? cita.pacientes.nombre : "Paciente borrado"));
+  arriba.append(nuevo("span", "etiqueta " + cita.estado, cita.estado));
+  caja.append(arriba);
+
+  const detalles = [cita.duracion_minutos + " min"];
+  if (cita.motivo) detalles.push(cita.motivo);
+  if (cita.pacientes && cita.pacientes.telefono) detalles.push("Tel. " + cita.pacientes.telefono);
+  caja.append(nuevo("div", "dato", detalles.join(" · ")));
+
+  const acciones = nuevo("div", "acciones");
+
+  if (cita.estado !== "atendida") {
+    const bAtendida = nuevo("button", "chico bien", "Marcar atendida");
+    bAtendida.type = "button";
+    bAtendida.addEventListener("click", () => cambiarCita(cita.id, { estado: "atendida" }));
+    acciones.append(bAtendida);
+  }
+  if (cita.estado !== "cancelada") {
+    const bCancelar = nuevo("button", "chico", "Cancelar");
+    bCancelar.type = "button";
+    bCancelar.addEventListener("click", () => cambiarCita(cita.id, { estado: "cancelada" }));
+    acciones.append(bCancelar);
+  }
+  if (cita.estado === "cancelada") {
+    const bReactivar = nuevo("button", "chico", "Reactivar");
+    bReactivar.type = "button";
+    bReactivar.addEventListener("click", () => cambiarCita(cita.id, { estado: "agendada" }));
+    acciones.append(bReactivar);
   }
 
-  function pinta(registros) {
-    if (!registros.length) {
-      lista.innerHTML = '<p class="vacio">Todavía no hay ningún mensaje. El tuyo puede ser el primero.</p>';
-      return;
-    }
-    lista.replaceChildren(...registros.map(function (r) {
-      const caja = document.createElement("article");
-      caja.className = "registro";
+  const bMover = nuevo("button", "chico", "Mover");
+  bMover.type = "button";
+  bMover.addEventListener("click", () => {
+    if (caja.querySelector(".mover")) return;
+    const fila = nuevo("div", "mover");
+    fila.style.marginTop = "11px";
+    const campo = document.createElement("input");
+    campo.type = "datetime-local";
+    campo.value = paraInput(new Date(cita.fecha_hora));
+    campo.style.marginBottom = "8px";
+    const bGuardar = nuevo("button", "chico bien", "Guardar nueva fecha");
+    bGuardar.type = "button";
+    bGuardar.addEventListener("click", () => {
+      if (!campo.value) return;
+      cambiarCita(cita.id, { fecha_hora: new Date(campo.value).toISOString() });
+    });
+    fila.append(campo, bGuardar);
+    caja.append(fila);
+  });
+  acciones.append(bMover);
 
-      const quien = document.createElement("div");
-      quien.className = "quien";
-      quien.textContent = r.nombre || "Alguien sin nombre";
-
-      const texto = document.createElement("div");
-      texto.className = "texto";
-      texto.textContent = r.mensaje || "";
-
-      const cuando = document.createElement("div");
-      cuando.className = "cuando";
-      cuando.textContent = fecha(r.creado_en);
-
-      caja.append(quien, texto, cuando);
-      return caja;
-    }));
-  }
-
-  async function cargar() {
-    try {
-      const r = await fetch(TABLA + "?select=nombre,mensaje,creado_en&order=creado_en.desc", {
-        headers: CABECERAS
-      });
-      if (!r.ok) throw new Error("respuesta " + r.status);
-      pinta(await r.json());
-    } catch (e) {
-      lista.innerHTML = '<p class="vacio">No se pudieron cargar los mensajes en este momento. Vuelve a intentarlo en un rato.</p>';
-      console.error(e);
-    }
-  }
-
-  formulario.addEventListener("submit", async function (evento) {
-    evento.preventDefault();
-    const nombre = document.getElementById("nombre").value.trim();
-    const mensaje = document.getElementById("mensaje").value.trim();
-    if (!nombre || !mensaje) { decir("Falta tu nombre o tu mensaje.", "mal"); return; }
-
-    boton.disabled = true;
-    decir("Guardando…");
-    try {
-      const r = await fetch(TABLA, {
-        method: "POST",
-        headers: Object.assign({ "Content-Type": "application/json" }, CABECERAS),
-        body: JSON.stringify({ nombre: nombre, mensaje: mensaje })
-      });
-      if (!r.ok) throw new Error("respuesta " + r.status);
-      formulario.reset();
-      decir("Listo, tu mensaje quedó guardado.", "ok");
-      await cargar();
-    } catch (e) {
-      decir("No se pudo guardar. Vuelve a intentarlo en un momento.", "mal");
-      console.error(e);
-    } finally {
-      boton.disabled = false;
+  const bBorrar = nuevo("button", "chico peligro", "Borrar");
+  bBorrar.type = "button";
+  bBorrar.addEventListener("click", () => {
+    const quien = cita.pacientes ? cita.pacientes.nombre : "este paciente";
+    if (confirm("¿Borrar la cita de " + quien + "? Esto no se puede deshacer.")) {
+      borrar("citas?id=eq." + cita.id);
     }
   });
+  acciones.append(bBorrar);
 
-  cargar();
+  caja.append(acciones);
+  return caja;
+}
+
+async function cambiarCita(id, cambios) {
+  try {
+    await api("citas?id=eq." + id, { method: "PATCH", body: JSON.stringify(cambios) });
+    await cargarTodo();
+  } catch (e) { console.error(e); alert("No se pudo guardar el cambio."); }
+}
+async function borrar(ruta) {
+  try {
+    await api(ruta, { method: "DELETE" });
+    await cargarTodo();
+  } catch (e) { console.error(e); alert("No se pudo borrar."); }
+}
+
+/* ------------------------- Pacientes ------------------------- */
+function pintarSelectPacientes() {
+  const selector = document.getElementById("c-paciente");
+  const elegido = selector.value;
+  selector.replaceChildren();
+  if (!pacientes.length) {
+    const o = document.createElement("option");
+    o.value = ""; o.textContent = "Todavía no hay pacientes registrados";
+    selector.append(o);
+    return;
+  }
+  pacientes.forEach(p => {
+    const o = document.createElement("option");
+    o.value = p.id; o.textContent = p.nombre;
+    selector.append(o);
+  });
+  if (elegido) selector.value = elegido;
+}
+
+function pintarPacientes() {
+  const caja = document.getElementById("lista-pacientes");
+  if (!pacientes.length) {
+    caja.replaceChildren(nuevo("p", "vacio", "Todavía no hay ningún paciente registrado."));
+    return;
+  }
+  caja.replaceChildren(...pacientes.map(p => {
+    const mias = citas.filter(c => c.paciente_id === p.id);
+    const activas = mias.filter(c => c.estado === "agendada").length;
+    const atendidas = mias.filter(c => c.estado === "atendida").length;
+
+    const fila = nuevo("article", "renglon");
+    const arriba = nuevo("div", "arriba");
+    arriba.append(nuevo("span", "quien", p.nombre));
+    arriba.append(nuevo("span", "dato", activas + " por venir · " + atendidas + " atendidas"));
+    fila.append(arriba);
+
+    const contacto = [];
+    if (p.telefono) contacto.push("Tel. " + p.telefono);
+    if (p.correo) contacto.push(p.correo);
+    if (p.fecha_nacimiento) contacto.push("Nac. " + p.fecha_nacimiento);
+    if (contacto.length) fila.append(nuevo("div", "dato", contacto.join(" · ")));
+    if (p.notas) fila.append(nuevo("div", "dato", p.notas));
+
+    const acciones = nuevo("div", "acciones");
+    const bBorrar = nuevo("button", "chico peligro", "Borrar paciente");
+    bBorrar.type = "button";
+    bBorrar.addEventListener("click", () => {
+      if (confirm("¿Borrar a " + p.nombre + " y sus " + mias.length +
+                  " cita(s)? Esto no se puede deshacer.")) {
+        borrar("pacientes?id=eq." + p.id);
+      }
+    });
+    acciones.append(bBorrar);
+    fila.append(acciones);
+    return fila;
+  }));
+}
+
+/* ------------------------- Módulo 1: registro ------------------------- */
+const formaRegistro = document.getElementById("forma-registro");
+const rBoton = document.getElementById("r-boton");
+const rAviso = document.getElementById("r-aviso");
+
+formaRegistro.addEventListener("submit", async evento => {
+  evento.preventDefault();
+  const nombre = document.getElementById("r-nombre").value.trim();
+  const cuando = document.getElementById("r-cuando").value;
+  if (!nombre || !cuando) { decir(rAviso, "Falta el nombre o la fecha de la cita.", "mal"); return; }
+
+  rBoton.disabled = true;
+  decir(rAviso, "Registrando…");
+  try {
+    const creados = await api("pacientes", {
+      method: "POST",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({
+        nombre: nombre,
+        telefono: document.getElementById("r-telefono").value.trim() || null,
+        correo: document.getElementById("r-correo").value.trim() || null,
+        fecha_nacimiento: document.getElementById("r-nacimiento").value || null
+      })
+    });
+    const paciente = creados[0];
+
+    await api("citas", {
+      method: "POST",
+      body: JSON.stringify({
+        paciente_id: paciente.id,
+        fecha_hora: new Date(cuando).toISOString(),
+        motivo: document.getElementById("r-motivo").value.trim() || null
+      })
+    });
+
+    formaRegistro.reset();
+    decir(rAviso, "Listo. Quedó registrado y su cita fue solicitada.", "ok");
+  } catch (e) {
+    console.error(e);
+    decir(rAviso, "No se pudo registrar. Vuelve a intentarlo en un momento.", "mal");
+  } finally {
+    rBoton.disabled = false;
+  }
+});
+
+/* ------------------------- Módulo 2: agendar ------------------------- */
+const formaCita = document.getElementById("forma-cita");
+const cBoton = document.getElementById("c-boton");
+const cAviso = document.getElementById("c-aviso");
+
+formaCita.addEventListener("submit", async evento => {
+  evento.preventDefault();
+  const pacienteId = document.getElementById("c-paciente").value;
+  const cuando = document.getElementById("c-cuando").value;
+  if (!pacienteId) { decir(cAviso, "Primero hay que registrar a un paciente.", "mal"); return; }
+  if (!cuando) { decir(cAviso, "Falta la fecha y hora.", "mal"); return; }
+
+  cBoton.disabled = true;
+  decir(cAviso, "Agendando…");
+  try {
+    await api("citas", {
+      method: "POST",
+      body: JSON.stringify({
+        paciente_id: pacienteId,
+        fecha_hora: new Date(cuando).toISOString(),
+        duracion_minutos: Number(document.getElementById("c-duracion").value) || 60,
+        motivo: document.getElementById("c-motivo").value.trim() || null
+      })
+    });
+    document.getElementById("c-motivo").value = "";
+    decir(cAviso, "Cita agendada.", "ok");
+    diaElegido = new Date(cuando);
+    mesVisible = new Date(diaElegido);
+    await cargarTodo();
+  } catch (e) {
+    console.error(e);
+    decir(cAviso, "No se pudo agendar. Vuelve a intentarlo en un momento.", "mal");
+  } finally {
+    cBoton.disabled = false;
+  }
+});
+
+/* ------------------------- Arranque ------------------------- */
+document.getElementById("r-cuando").min = paraInput(new Date());
+cargarTodo();
 </script>
 </body>
 </html>

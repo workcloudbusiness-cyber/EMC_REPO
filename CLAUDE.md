@@ -13,21 +13,53 @@ cuándo se usa.)*
 
 ## 2. De dónde sale cada cifra
 
-Los datos de esta página viven en una tabla de Supabase llamada `registros`.
+Los datos de esta página viven en Supabase, en el proyecto `curso-EJEMPLO`.
 Ninguna cifra ni ningún texto que se muestre se escribe a mano en el HTML: todo
-sale de esa tabla o de lo que la persona escriba en el formulario.
+sale de esas tablas o de lo que la persona escriba en los formularios.
 
-La tabla `registros` tiene estas columnas:
+### Tabla `pacientes`
 
 | Columna | Qué guarda |
 |---|---|
 | `id` | Identificador único, lo pone la base sola |
-| `creado_en` | Fecha y hora del envío, la pone la base sola |
-| `nombre` | Lo que la persona escribió en "Tu nombre" |
-| `mensaje` | Lo que la persona escribió en "Tu mensaje" |
+| `creado_en` | Fecha y hora del registro, la pone la base sola |
+| `nombre` | Nombre completo (obligatorio) |
+| `telefono` | Teléfono de contacto |
+| `correo` | Correo de contacto |
+| `fecha_nacimiento` | Fecha de nacimiento |
+| `notas` | Notas libres |
 
-Permisos de la tabla: cualquiera puede **leer** y **agregar** renglones; **nadie
-puede borrar ni editar** (no existe ninguna regla de borrado ni de edición).
+### Tabla `citas`
+
+| Columna | Qué guarda |
+|---|---|
+| `id` | Identificador único, lo pone la base sola |
+| `creado_en` | Cuándo se agendó, la pone la base sola |
+| `paciente_id` | De quién es la cita. Si se borra el paciente, sus citas se borran con él |
+| `fecha_hora` | Cuándo es la cita |
+| `duracion_minutos` | Cuánto dura (60 por default) |
+| `motivo` | Motivo de la consulta |
+| `estado` | Solo acepta `agendada`, `atendida` o `cancelada` |
+
+### Tabla `registros`
+
+Es la del ejercicio anterior (un muro de mensajes con `nombre` y `mensaje`).
+Sigue existiendo pero la página ya no la usa.
+
+### Permisos, y por qué importan
+
+En `pacientes` y `citas` **cualquiera puede leer, agregar, editar y borrar**.
+Esto es a propósito: el panel del administrador no lleva contraseña, y sin esos
+permisos no funcionaría.
+
+> **Esta página es un ejercicio con datos inventados.** Con estos permisos,
+> cualquiera que tenga la liga ve y modifica todo. **No se deben meter datos
+> reales de pacientes.** Si algún día se va a usar con gente de verdad, primero
+> hay que poner cuentas con contraseña (Supabase Auth) y cerrar la lectura a
+> quien no haya iniciado sesión.
+
+En `registros` los permisos siguen como estaban: leer y agregar sí, borrar y
+editar no.
 
 ## 3. Cómo quiero que trabajes aquí
 

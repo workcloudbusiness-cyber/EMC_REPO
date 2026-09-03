@@ -44,6 +44,29 @@ sale de esas tablas o de lo que la persona escriba en los formularios.
 | `pagado_en` | Cuándo se confirmó el pago |
 | `monto` | Cuánto pagó. Es opcional, pero no puede ser negativo |
 
+### Tabla `administradores`
+
+La usa el módulo de súper administrador.
+
+| Columna | Qué guarda |
+|---|---|
+| `id` | Identificador único, lo pone la base sola |
+| `creado_en` | Cuándo se dio de alta, la pone la base sola |
+| `nombre` | Nombre del administrador (obligatorio) |
+| `correo` | Correo de contacto |
+| `bloqueado` | Si está bloqueado (sí/no). Nace en "no" |
+| `pagado_hasta` | Fecha hasta la que está cubierto su pago |
+
+El semáforo de la pantalla se calcula así, y **el bloqueo manda sobre todo lo demás**:
+`bloqueado` → **bloqueado**; si no, `pagado_hasta` vacía o ya pasada → **vencido**;
+si no → **al corriente**. Registrar un pago también le quita el bloqueo.
+
+> **El bloqueo es una demostración, no un cobro.** Como la plataforma no lleva cuentas
+> ni contraseñas, bloquear a un administrador cambia su estado en la lista pero **no le
+> impide entrar**: cualquiera con la liga sigue pasando. La página lo dice en pantalla,
+> y ese aviso no se debe quitar mientras no haya cuentas de verdad. Para que el bloqueo
+> cobre, haría falta Supabase Auth y cerrar las tablas a quien no haya iniciado sesión.
+
 ### Tabla `registros`
 
 Es la del ejercicio anterior (un muro de mensajes con `nombre` y `mensaje`).

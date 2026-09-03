@@ -40,6 +40,9 @@ sale de esas tablas o de lo que la persona escriba en los formularios.
 | `duracion_minutos` | Cuánto dura (60 por default) |
 | `motivo` | Motivo de la consulta |
 | `estado` | Solo acepta `agendada`, `atendida` o `cancelada` |
+| `pagada` | Si el paciente ya pagó (sí/no). Nace en "no" |
+| `pagado_en` | Cuándo se confirmó el pago |
+| `monto` | Cuánto pagó. Es opcional, pero no puede ser negativo |
 
 ### Tabla `registros`
 

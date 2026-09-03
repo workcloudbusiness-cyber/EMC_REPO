@@ -146,6 +146,14 @@
   .etiqueta.agendada  { color: var(--azul);  border-color: var(--azul); }
   .etiqueta.atendida  { color: var(--verde); border-color: var(--verde); }
   .etiqueta.cancelada { color: var(--tenue); border-color: var(--tenue); }
+  .etiqueta.pagada    { color: #fff; background: var(--verde); border-color: var(--verde); }
+  .cobro-dia {
+    font-size: 14px; color: var(--tenue); margin: -8px 0 14px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--borde);
+  }
+  .cobro-dia strong { color: var(--verde); font-variant-numeric: tabular-nums; }
+  .pago-fila { margin-top: 11px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .pago-fila input { width: 130px; margin-bottom: 0; }
 
   [hidden] { display: none !important; }
 </style>
@@ -301,6 +309,12 @@ function paraInput(d) {
 function horaTexto(iso) {
   return new Date(iso).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
 }
+function dinero(n) {
+  return Number(n || 0).toLocaleString("es-MX", { style: "currency", currency: "MXN" });
+}
+function fechaCorta(iso) {
+  return new Date(iso).toLocaleDateString("es-MX", { day: "numeric", month: "short" });
+}
 function fechaLarga(d) {
   return d.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 }
@@ -429,7 +443,18 @@ function pintarDia() {
     caja.replaceChildren(nuevo("p", "vacio", "No hay ninguna cita agendada este día."));
     return;
   }
-  caja.replaceChildren(...delDia.map(tarjetaDeCita));
+
+  // Resumen de cobro: solo cuenta las citas que no fueron canceladas.
+  const vivas = delDia.filter(c => c.estado !== "cancelada");
+  const pagadas = vivas.filter(c => c.pagada);
+  const cobrado = pagadas.reduce((suma, c) => suma + Number(c.monto || 0), 0);
+
+  const resumen = nuevo("p", "cobro-dia");
+  resumen.append(document.createTextNode(
+    pagadas.length + " de " + vivas.length + " cita(s) con pago confirmado · cobrado: "));
+  resumen.append(nuevo("strong", null, dinero(cobrado)));
+
+  caja.replaceChildren(resumen, ...delDia.map(tarjetaDeCita));
 }
 
 function tarjetaDeCita(cita) {
@@ -439,12 +464,20 @@ function tarjetaDeCita(cita) {
   arriba.append(nuevo("span", "hora", horaTexto(cita.fecha_hora)));
   arriba.append(nuevo("span", "quien", cita.pacientes ? cita.pacientes.nombre : "Paciente borrado"));
   arriba.append(nuevo("span", "etiqueta " + cita.estado, cita.estado));
+  if (cita.pagada) arriba.append(nuevo("span", "etiqueta pagada", "pagada"));
   caja.append(arriba);
 
   const detalles = [cita.duracion_minutos + " min"];
   if (cita.motivo) detalles.push(cita.motivo);
   if (cita.pacientes && cita.pacientes.telefono) detalles.push("Tel. " + cita.pacientes.telefono);
   caja.append(nuevo("div", "dato", detalles.join(" · ")));
+
+  if (cita.pagada) {
+    const partes = ["Pago confirmado"];
+    if (cita.monto !== null && cita.monto !== undefined) partes.push(dinero(cita.monto));
+    if (cita.pagado_en) partes.push("el " + fechaCorta(cita.pagado_en));
+    caja.append(nuevo("div", "dato", partes.join(" · ")));
+  }
 
   const acciones = nuevo("div", "acciones");
 
@@ -487,6 +520,43 @@ function tarjetaDeCita(cita) {
     caja.append(fila);
   });
   acciones.append(bMover);
+
+  if (cita.pagada) {
+    const bDeshacer = nuevo("button", "chico", "Deshacer pago");
+    bDeshacer.type = "button";
+    bDeshacer.addEventListener("click", () =>
+      cambiarCita(cita.id, { pagada: false, pagado_en: null, monto: null }));
+    acciones.append(bDeshacer);
+  } else {
+    const bPago = nuevo("button", "chico bien", "Confirmar pago");
+    bPago.type = "button";
+    bPago.addEventListener("click", () => {
+      if (caja.querySelector(".pago-fila")) return;
+      const fila = nuevo("div", "pago-fila");
+      const campo = document.createElement("input");
+      campo.type = "number"; campo.min = "0"; campo.step = "0.01";
+      campo.placeholder = "Cuánto pagó";
+      campo.setAttribute("aria-label", "Monto pagado");
+      const bGuardar = nuevo("button", "chico bien", "Confirmar");
+      bGuardar.type = "button";
+      bGuardar.addEventListener("click", () => {
+        const monto = campo.value === "" ? null : Number(campo.value);
+        if (monto !== null && (!isFinite(monto) || monto < 0)) {
+          alert("El monto no puede ser negativo."); return;
+        }
+        cambiarCita(cita.id, {
+          pagada: true,
+          pagado_en: new Date().toISOString(),
+          monto: monto
+        });
+      });
+      // Se puede confirmar sin anotar monto: el importe es opcional.
+      fila.append(campo, bGuardar);
+      caja.append(fila);
+      campo.focus();
+    });
+    acciones.append(bPago);
+  }
 
   const bBorrar = nuevo("button", "chico peligro", "Borrar");
   bBorrar.type = "button";
@@ -548,7 +618,9 @@ function pintarPacientes() {
     const fila = nuevo("article", "renglon");
     const arriba = nuevo("div", "arriba");
     arriba.append(nuevo("span", "quien", p.nombre));
-    arriba.append(nuevo("span", "dato", activas + " por venir · " + atendidas + " atendidas"));
+    const porCobrar = mias.filter(c => c.estado !== "cancelada" && !c.pagada).length;
+    arriba.append(nuevo("span", "dato",
+      activas + " por venir · " + atendidas + " atendidas · " + porCobrar + " sin pagar"));
     fila.append(arriba);
 
     const contacto = [];

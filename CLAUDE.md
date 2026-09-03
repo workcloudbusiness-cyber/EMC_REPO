@@ -17,7 +17,17 @@ Los datos de esta página viven en una tabla de Supabase llamada `registros`.
 Ninguna cifra ni ningún texto que se muestre se escribe a mano en el HTML: todo
 sale de esa tabla o de lo que la persona escriba en el formulario.
 
-*(En la sesión le agregas las columnas que acabes usando.)*
+La tabla `registros` tiene estas columnas:
+
+| Columna | Qué guarda |
+|---|---|
+| `id` | Identificador único, lo pone la base sola |
+| `creado_en` | Fecha y hora del envío, la pone la base sola |
+| `nombre` | Lo que la persona escribió en "Tu nombre" |
+| `mensaje` | Lo que la persona escribió en "Tu mensaje" |
+
+Permisos de la tabla: cualquiera puede **leer** y **agregar** renglones; **nadie
+puede borrar ni editar** (no existe ninguna regla de borrado ni de edición).
 
 ## 3. Cómo quiero que trabajes aquí
 

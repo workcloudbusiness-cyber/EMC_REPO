@@ -3,46 +3,178 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Todavía no hay nada aquí</title>
+<title>Deja tu mensaje</title>
 <style>
   :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
   body {
     margin: 0; min-height: 100vh;
-    display: grid; place-items: center;
     font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
     background: #f4f6f8; color: #1a2027;
     padding: 24px;
+    display: flex; justify-content: center;
   }
-  @media (prefers-color-scheme: dark) {
-    body { background: #121820; color: #e8eef5; }
-    .caja { background: #1b232e !important; border-color: #2b3644 !important; }
-    code { background: #253040 !important; }
-  }
+  .hoja { width: 100%; max-width: 560px; }
+  h1 { font-size: 24px; margin: 0 0 6px; }
+  .intro { margin: 0 0 24px; line-height: 1.55; opacity: .8; }
   .caja {
     background: #fff; border: 1px solid #dde3ea; border-radius: 14px;
-    padding: 34px; max-width: 480px; text-align: center;
+    padding: 22px; margin-bottom: 24px;
     box-shadow: 0 10px 30px -18px rgba(0,0,0,.3);
   }
-  h1 { font-size: 22px; margin: 0 0 10px; }
-  p { margin: 0 0 14px; line-height: 1.55; }
-  p:last-child { margin-bottom: 0; }
-  code {
-    background: #eef2f6; padding: 2px 6px; border-radius: 4px;
-    font-family: ui-monospace, "Consolas", monospace; font-size: .9em;
+  label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  input, textarea {
+    width: 100%; padding: 10px 12px; margin-bottom: 16px;
+    border: 1px solid #cfd8e2; border-radius: 8px;
+    font: inherit; font-size: 15px;
+    background: #fff; color: inherit;
   }
-  .chica { font-size: 14px; opacity: .75; }
+  textarea { resize: vertical; min-height: 84px; }
+  input:focus, textarea:focus { outline: 2px solid #3b7dd8; outline-offset: 1px; border-color: #3b7dd8; }
+  button {
+    width: 100%; padding: 11px 16px; border: 0; border-radius: 8px;
+    background: #1f6feb; color: #fff; font: inherit; font-weight: 600;
+    font-size: 15px; cursor: pointer;
+  }
+  button:hover:not(:disabled) { background: #1a5fd0; }
+  button:disabled { opacity: .55; cursor: default; }
+  .aviso { margin-top: 14px; font-size: 14px; line-height: 1.5; min-height: 1px; }
+  .aviso.ok { color: #1a7f45; }
+  .aviso.mal { color: #c02b2b; }
+  h2 { font-size: 17px; margin: 0 0 12px; }
+  .registro {
+    background: #fff; border: 1px solid #dde3ea; border-radius: 12px;
+    padding: 15px 17px; margin-bottom: 11px;
+  }
+  .registro .quien { font-weight: 600; margin-bottom: 4px; }
+  .registro .texto { line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .registro .cuando { font-size: 13px; opacity: .6; margin-top: 8px; }
+  .vacio { opacity: .7; line-height: 1.55; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #121820; color: #e8eef5; }
+    .caja, .registro { background: #1b232e; border-color: #2b3644; }
+    input, textarea { background: #131a23; border-color: #2b3644; }
+  }
 </style>
 </head>
 <body>
-  <div class="caja">
-    <h1>Todavía no hay nada aquí</h1>
-    <p>Y eso es exactamente lo que tiene que decir hoy.</p>
-    <p>Si estás leyendo esto en tu propia liga, quiere decir que
-       <strong>tu repositorio, tu publicación y tu página ya funcionan</strong>.
-       Es todo lo que necesitabas antes de la sesión.</p>
-    <p class="chica">El martes le vas a pedir a Claude que reemplace esta página
-       por la tuya. Este archivo se llama <code>index.html</code> y es el único
-       que hay que cambiar.</p>
-  </div>
+  <main class="hoja">
+    <h1>Deja tu mensaje</h1>
+    <p class="intro">Escribe tu nombre y lo que quieras decir. Se guarda y aparece
+       abajo, junto con lo que han dejado los demás.</p>
+
+    <form class="caja" id="formulario">
+      <label for="nombre">Tu nombre</label>
+      <input id="nombre" name="nombre" type="text" maxlength="80" required
+             autocomplete="name" placeholder="Cómo te llamas">
+
+      <label for="mensaje">Tu mensaje</label>
+      <textarea id="mensaje" name="mensaje" maxlength="1000" required
+                placeholder="Lo que quieras dejar escrito"></textarea>
+
+      <button type="submit" id="boton">Guardar mi mensaje</button>
+      <p class="aviso" id="aviso" role="status" aria-live="polite"></p>
+    </form>
+
+    <section>
+      <h2>Lo que ha dejado la gente</h2>
+      <div id="lista"><p class="vacio">Cargando…</p></div>
+    </section>
+  </main>
+
+<script>
+  // Datos de conexion a Supabase.
+  // Esta llave es la PUBLICABLE: esta hecha para andar a la vista en la pagina.
+  // Lo que se puede hacer con ella lo decide Supabase (leer y agregar, nunca borrar).
+  const SUPABASE_URL = "https://jxqtemaupajeyytxaxaa.supabase.co";
+  const SUPABASE_LLAVE = "sb_publishable_BtoaP1DzyKNd8BJ718ZduA_FTxDEG-7";
+
+  const TABLA = SUPABASE_URL + "/rest/v1/registros";
+  const CABECERAS = { apikey: SUPABASE_LLAVE, Authorization: "Bearer " + SUPABASE_LLAVE };
+
+  const formulario = document.getElementById("formulario");
+  const boton = document.getElementById("boton");
+  const aviso = document.getElementById("aviso");
+  const lista = document.getElementById("lista");
+
+  function decir(texto, clase) {
+    aviso.textContent = texto;
+    aviso.className = "aviso" + (clase ? " " + clase : "");
+  }
+
+  function fecha(iso) {
+    if (!iso) return "";
+    return new Date(iso).toLocaleString("es-MX", {
+      day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit"
+    });
+  }
+
+  function pinta(registros) {
+    if (!registros.length) {
+      lista.innerHTML = '<p class="vacio">Todavia no hay ningun mensaje. El tuyo puede ser el primero.</p>';
+      return;
+    }
+    lista.replaceChildren(...registros.map(function (r) {
+      const caja = document.createElement("article");
+      caja.className = "registro";
+
+      const quien = document.createElement("div");
+      quien.className = "quien";
+      quien.textContent = r.nombre || "Alguien sin nombre";
+
+      const texto = document.createElement("div");
+      texto.className = "texto";
+      texto.textContent = r.mensaje || "";
+
+      const cuando = document.createElement("div");
+      cuando.className = "cuando";
+      cuando.textContent = fecha(r.creado_en);
+
+      caja.append(quien, texto, cuando);
+      return caja;
+    }));
+  }
+
+  async function cargar() {
+    try {
+      const r = await fetch(TABLA + "?select=nombre,mensaje,creado_en&order=creado_en.desc", {
+        headers: CABECERAS
+      });
+      if (!r.ok) throw new Error("respuesta " + r.status);
+      pinta(await r.json());
+    } catch (e) {
+      lista.innerHTML = '<p class="vacio">No se pudieron cargar los mensajes en este momento. Vuelve a intentarlo en un rato.</p>';
+      console.error(e);
+    }
+  }
+
+  formulario.addEventListener("submit", async function (evento) {
+    evento.preventDefault();
+    const nombre = document.getElementById("nombre").value.trim();
+    const mensaje = document.getElementById("mensaje").value.trim();
+    if (!nombre || !mensaje) { decir("Falta tu nombre o tu mensaje.", "mal"); return; }
+
+    boton.disabled = true;
+    decir("Guardando…");
+    try {
+      const r = await fetch(TABLA, {
+        method: "POST",
+        headers: Object.assign({ "Content-Type": "application/json" }, CABECERAS),
+        body: JSON.stringify({ nombre: nombre, mensaje: mensaje })
+      });
+      if (!r.ok) throw new Error("respuesta " + r.status);
+      formulario.reset();
+      decir("Listo, tu mensaje quedo guardado.", "ok");
+      await cargar();
+    } catch (e) {
+      decir("No se pudo guardar. Vuelve a intentarlo en un momento.", "mal");
+      console.error(e);
+    } finally {
+      boton.disabled = false;
+    }
+  });
+
+  cargar();
+</script>
 </body>
 </html>

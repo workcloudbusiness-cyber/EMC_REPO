@@ -147,6 +147,9 @@
   .etiqueta.atendida  { color: var(--verde); border-color: var(--verde); }
   .etiqueta.cancelada { color: var(--tenue); border-color: var(--tenue); }
   .etiqueta.pagada    { color: #fff; background: var(--verde); border-color: var(--verde); }
+  .etiqueta.admin-al-corriente { color: #fff; background: var(--verde); border-color: var(--verde); }
+  .etiqueta.admin-vencido      { color: #fff; background: #b06a00;    border-color: #b06a00; }
+  .etiqueta.admin-bloqueado    { color: #fff; background: var(--rojo); border-color: var(--rojo); }
   .cobro-dia {
     font-size: 14px; color: var(--tenue); margin: -8px 0 14px;
     padding-bottom: 12px; border-bottom: 1px solid var(--borde);
@@ -175,6 +178,7 @@
   <div class="pestanas" role="tablist">
     <button role="tab" id="tab-registro" aria-selected="true"  aria-controls="vista-registro">Registro del paciente</button>
     <button role="tab" id="tab-panel"    aria-selected="false" aria-controls="vista-panel">Panel del administrador</button>
+    <button role="tab" id="tab-super"    aria-selected="false" aria-controls="vista-super">Súper administrador</button>
   </div>
 
   <!-- ============ MÓDULO 1: REGISTRO DEL PACIENTE ============ -->
@@ -262,6 +266,50 @@
     </div>
 
   </section>
+
+  <!-- ============ MÓDULO 3: SÚPER ADMINISTRADOR ============ -->
+  <section id="vista-super" role="tabpanel" aria-labelledby="tab-super" hidden>
+
+    <p class="alerta">
+      <strong>El bloqueo aquí es una demostración.</strong> Esta plataforma no lleva
+      cuentas ni contraseñas, así que bloquear a un administrador cambia su estado en
+      esta lista pero <strong>no le impide entrar</strong>: cualquiera con la liga
+      sigue pasando. Para que el bloqueo cobre de verdad haría falta poner cuentas
+      con contraseña.
+    </p>
+
+    <div class="tarjeta">
+      <h2>Resumen</h2>
+      <div id="resumen-admins"><p class="vacio">Cargando…</p></div>
+    </div>
+
+    <form class="tarjeta" id="forma-admin">
+      <h2>Dar de alta un administrador</h2>
+
+      <label for="a-nombre">Nombre *</label>
+      <input id="a-nombre" type="text" maxlength="120" required autocomplete="off" placeholder="Nombre y apellidos">
+
+      <div class="pareja">
+        <div>
+          <label for="a-correo">Correo</label>
+          <input id="a-correo" type="email" maxlength="120" autocomplete="off" placeholder="alguien@ejemplo.com">
+        </div>
+        <div>
+          <label for="a-pagado">Pagado hasta</label>
+          <input id="a-pagado" type="date">
+        </div>
+      </div>
+
+      <button type="submit" class="principal" id="a-boton">Dar de alta</button>
+      <p class="aviso" id="a-aviso" role="status" aria-live="polite"></p>
+    </form>
+
+    <div class="tarjeta">
+      <h2>Administradores</h2>
+      <div id="lista-admins"><p class="vacio">Cargando…</p></div>
+    </div>
+
+  </section>
 </main>
 
 <script>
@@ -315,6 +363,12 @@ function dinero(n) {
 function fechaCorta(iso) {
   return new Date(iso).toLocaleDateString("es-MX", { day: "numeric", month: "short" });
 }
+// Para fechas sueltas "AAAA-MM-DD", que no traen hora ni zona horaria.
+function fechaCortaDia(dia) {
+  const [a, m, d] = dia.split("-").map(Number);
+  return new Date(a, m - 1, d).toLocaleDateString("es-MX",
+    { day: "numeric", month: "long", year: "numeric" });
+}
 function fechaLarga(d) {
   return d.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 }
@@ -330,20 +384,22 @@ function nuevo(etiqueta, clase, texto) {
 }
 
 /* ------------------------- Pestañas ------------------------- */
-const tabRegistro = document.getElementById("tab-registro");
-const tabPanel    = document.getElementById("tab-panel");
-const vistaRegistro = document.getElementById("vista-registro");
-const vistaPanel    = document.getElementById("vista-panel");
+const VISTAS = {
+  registro: { tab: "tab-registro", vista: "vista-registro" },
+  panel:    { tab: "tab-panel",    vista: "vista-panel" },
+  super:    { tab: "tab-super",    vista: "vista-super" }
+};
 
 function mostrar(cual) {
-  const esPanel = cual === "panel";
-  tabPanel.setAttribute("aria-selected", String(esPanel));
-  tabRegistro.setAttribute("aria-selected", String(!esPanel));
-  vistaPanel.hidden = !esPanel;
-  vistaRegistro.hidden = esPanel;
+  Object.keys(VISTAS).forEach(nombre => {
+    const esta = nombre === cual;
+    document.getElementById(VISTAS[nombre].tab).setAttribute("aria-selected", String(esta));
+    document.getElementById(VISTAS[nombre].vista).hidden = !esta;
+  });
 }
-tabRegistro.addEventListener("click", () => mostrar("registro"));
-tabPanel.addEventListener("click", () => { mostrar("panel"); cargarTodo(); });
+document.getElementById("tab-registro").addEventListener("click", () => mostrar("registro"));
+document.getElementById("tab-panel").addEventListener("click", () => { mostrar("panel"); cargarTodo(); });
+document.getElementById("tab-super").addEventListener("click", () => { mostrar("super"); cargarAdmins(); });
 
 /* ------------------------- Cargar datos ------------------------- */
 async function cargarTodo() {
@@ -644,6 +700,172 @@ function pintarPacientes() {
     return fila;
   }));
 }
+
+/* ------------------------- Módulo 3: súper administrador ------------------------- */
+let administradores = [];
+
+// El semaforo de cada administrador. El bloqueo manda sobre todo lo demas.
+function estadoAdmin(a) {
+  if (a.bloqueado) return "bloqueado";
+  if (!a.pagado_hasta) return "vencido";
+  // Se compara por dia, no por hora: pagado_hasta viene como "AAAA-MM-DD".
+  return a.pagado_hasta >= claveDia(new Date()) ? "al corriente" : "vencido";
+}
+
+// Un mes hacia adelante, para sugerir la fecha del proximo pago.
+function dentroDeUnMes() {
+  const d = new Date();
+  d.setMonth(d.getMonth() + 1);
+  return claveDia(d);
+}
+
+async function cargarAdmins() {
+  const lista = document.getElementById("lista-admins");
+  const resumen = document.getElementById("resumen-admins");
+  try {
+    administradores = (await api("administradores?select=*&order=nombre.asc")) || [];
+  } catch (e) {
+    console.error(e);
+    const recado = "No se pudo hablar con la base de datos. Si la página estuvo una " +
+                   "semana sin usarse, el proyecto de Supabase pudo pausarse: se " +
+                   "despierta con el botón Resume project.";
+    lista.replaceChildren(nuevo("p", "aviso mal", recado));
+    resumen.replaceChildren(nuevo("p", "aviso mal", recado));
+    return;
+  }
+  pintarResumenAdmins();
+  pintarAdmins();
+}
+
+function pintarResumenAdmins() {
+  const caja = document.getElementById("resumen-admins");
+  if (!administradores.length) {
+    caja.replaceChildren(nuevo("p", "vacio", "Todavía no hay ningún administrador dado de alta."));
+    return;
+  }
+  const cuenta = e => administradores.filter(a => estadoAdmin(a) === e).length;
+  const linea = nuevo("p", "cobro-dia");
+  linea.style.margin = "0";
+  linea.style.border = "0";
+  linea.style.padding = "0";
+  linea.append(document.createTextNode(administradores.length + " administrador(es) · "));
+  linea.append(nuevo("strong", null, cuenta("al corriente") + " al corriente"));
+  linea.append(document.createTextNode(" · " + cuenta("vencido") + " vencidos · " +
+                                       cuenta("bloqueado") + " bloqueados"));
+  caja.replaceChildren(linea);
+}
+
+function pintarAdmins() {
+  const caja = document.getElementById("lista-admins");
+  if (!administradores.length) {
+    caja.replaceChildren(nuevo("p", "vacio", "Todavía no hay ningún administrador dado de alta."));
+    return;
+  }
+  caja.replaceChildren(...administradores.map(tarjetaDeAdmin));
+}
+
+function tarjetaDeAdmin(admin) {
+  const estado = estadoAdmin(admin);
+  const caja = nuevo("article", "renglon");
+
+  const arriba = nuevo("div", "arriba");
+  arriba.append(nuevo("span", "quien", admin.nombre));
+  arriba.append(nuevo("span", "etiqueta admin-" + estado.replace(/ /g, "-"), estado));
+  caja.append(arriba);
+
+  const datos = [];
+  if (admin.correo) datos.push(admin.correo);
+  datos.push(admin.pagado_hasta ? "Pagado hasta el " + fechaCortaDia(admin.pagado_hasta)
+                                : "Sin ningún pago registrado");
+  caja.append(nuevo("div", "dato", datos.join(" · ")));
+
+  const acciones = nuevo("div", "acciones");
+
+  const bBloqueo = nuevo("button", "chico " + (admin.bloqueado ? "bien" : "peligro"),
+                         admin.bloqueado ? "Desbloquear" : "Bloquear");
+  bBloqueo.type = "button";
+  bBloqueo.addEventListener("click", () =>
+    cambiarAdmin(admin.id, { bloqueado: !admin.bloqueado }));
+  acciones.append(bBloqueo);
+
+  const bPago = nuevo("button", "chico bien", "Registrar pago");
+  bPago.type = "button";
+  bPago.addEventListener("click", () => {
+    if (caja.querySelector(".pago-fila")) return;
+    const fila = nuevo("div", "pago-fila");
+    const campo = document.createElement("input");
+    campo.type = "date";
+    campo.value = dentroDeUnMes();
+    campo.setAttribute("aria-label", "Pagado hasta");
+    const bGuardar = nuevo("button", "chico bien", "Guardar");
+    bGuardar.type = "button";
+    bGuardar.addEventListener("click", () => {
+      if (!campo.value) { alert("Falta la fecha hasta la que queda pagado."); return; }
+      // Registrar un pago también le quita el bloqueo: ya se puso al corriente.
+      cambiarAdmin(admin.id, { pagado_hasta: campo.value, bloqueado: false });
+    });
+    fila.append(campo, bGuardar);
+    caja.append(fila);
+    campo.focus();
+  });
+  acciones.append(bPago);
+
+  const bBaja = nuevo("button", "chico peligro", "Dar de baja");
+  bBaja.type = "button";
+  bBaja.addEventListener("click", () => {
+    if (confirm("¿Dar de baja a " + admin.nombre + "? Esto no se puede deshacer.")) {
+      borrarAdmin("administradores?id=eq." + admin.id);
+    }
+  });
+  acciones.append(bBaja);
+
+  caja.append(acciones);
+  return caja;
+}
+
+async function cambiarAdmin(id, cambios) {
+  try {
+    await api("administradores?id=eq." + id, { method: "PATCH", body: JSON.stringify(cambios) });
+    await cargarAdmins();
+  } catch (e) { console.error(e); alert("No se pudo guardar el cambio."); }
+}
+async function borrarAdmin(ruta) {
+  try {
+    await api(ruta, { method: "DELETE" });
+    await cargarAdmins();
+  } catch (e) { console.error(e); alert("No se pudo dar de baja."); }
+}
+
+const formaAdmin = document.getElementById("forma-admin");
+const aBoton = document.getElementById("a-boton");
+const aAviso = document.getElementById("a-aviso");
+
+formaAdmin.addEventListener("submit", async evento => {
+  evento.preventDefault();
+  const nombre = document.getElementById("a-nombre").value.trim();
+  if (!nombre) { decir(aAviso, "Falta el nombre.", "mal"); return; }
+
+  aBoton.disabled = true;
+  decir(aAviso, "Dando de alta…");
+  try {
+    await api("administradores", {
+      method: "POST",
+      body: JSON.stringify({
+        nombre: nombre,
+        correo: document.getElementById("a-correo").value.trim() || null,
+        pagado_hasta: document.getElementById("a-pagado").value || null
+      })
+    });
+    formaAdmin.reset();
+    decir(aAviso, "Listo, quedó dado de alta.", "ok");
+    await cargarAdmins();
+  } catch (e) {
+    console.error(e);
+    decir(aAviso, "No se pudo dar de alta. Vuelve a intentarlo en un momento.", "mal");
+  } finally {
+    aBoton.disabled = false;
+  }
+});
 
 /* ------------------------- Módulo 1: registro ------------------------- */
 const formaRegistro = document.getElementById("forma-registro");

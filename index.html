@@ -111,7 +111,7 @@
 
   function pinta(registros) {
     if (!registros.length) {
-      lista.innerHTML = '<p class="vacio">Todavia no hay ningun mensaje. El tuyo puede ser el primero.</p>';
+      lista.innerHTML = '<p class="vacio">Todavía no hay ningún mensaje. El tuyo puede ser el primero.</p>';
       return;
     }
     lista.replaceChildren(...registros.map(function (r) {
@@ -164,7 +164,7 @@
       });
       if (!r.ok) throw new Error("respuesta " + r.status);
       formulario.reset();
-      decir("Listo, tu mensaje quedo guardado.", "ok");
+      decir("Listo, tu mensaje quedó guardado.", "ok");
       await cargar();
     } catch (e) {
       decir("No se pudo guardar. Vuelve a intentarlo en un momento.", "mal");
